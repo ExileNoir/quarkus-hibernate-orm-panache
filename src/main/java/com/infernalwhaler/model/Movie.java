@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 public class Movie {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
     @Column(length = 100)
     private String title;
