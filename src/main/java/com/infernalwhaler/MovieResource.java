@@ -35,7 +35,7 @@ public class MovieResource {
     @Path("/{id}")
     @Operation(summary = "Get a movies by id", description = "Find a movies by id from the db")
     public Response findById(@Parameter(description = "Movie id")
-                             @PathParam("id") Long id) {
+                             @PathParam("id") final Long id) {
         return movieRepository.findByIdOptional(id)
                 .map(movie -> Response.ok(movie).build())
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
@@ -45,7 +45,7 @@ public class MovieResource {
     @Path("country/{country}")
     @Operation(summary = "Get a movies by country", description = "Find a movies by country from the db")
     public Response findByCountry(@Parameter(description = "Movie country")
-                                  @PathParam("country") String country) {
+                                  @PathParam("country") final String country) {
         final List<Movie> listCountries = movieRepository.findByCountry(country);
         return Response.status(Response.Status.OK).entity(listCountries).build();
     }
@@ -54,7 +54,7 @@ public class MovieResource {
     @Path("title/{title}")
     @Operation(summary = "Get a movies by title", description = "Find a movies by title from the db")
     public Response findByTitle(@Parameter(description = "Movie title")
-                                @PathParam("title") String title) {
+                                @PathParam("title") final String title) {
         return movieRepository.find("title", title)
                 .singleResultOptional()
                 .map(movie -> Response.ok(movie).build())
@@ -64,7 +64,7 @@ public class MovieResource {
     @POST
     @Transactional
     @Operation(summary = "Add a new movie", description = "Add a new movie to the db")
-    public Response create(@RequestBody(description = "Movie to create") Movie movie) {
+    public Response create(@RequestBody(description = "Movie to create") final Movie movie) {
         movieRepository.persist(movie);
         return movieRepository.isPersistent(movie) ?
                 Response.created(URI.create("/movies/" + movie.getId())).build() :
@@ -74,11 +74,18 @@ public class MovieResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    public Response updateMovie(@Parameter(description = "Movie id to update") @PathParam("id") Long id,
-                                @RequestBody(description = "Movie to update") Movie movie) {
-        return movieRepository.updateMovie(id, movie) > 0 ?
-                Response.ok(movie).build() :
-                Response.status(Response.Status.BAD_REQUEST).build();
+    public Response updateMovieById(@Parameter(description = "Movie id to update") @PathParam("id") final Long id,
+                                    @RequestBody(description = "Movie to update") final Movie movie) {
+        return movieRepository
+                .findByIdOptional(id)
+                .map(movieToUpdate -> {
+                    movieToUpdate.setTitle(movie.getTitle());
+                    movieToUpdate.setDirector(movie.getDirector());
+                    movieToUpdate.setDescription(movie.getDescription());
+                    movieToUpdate.setCountry(movie.getCountry());
+                    return Response.ok(movieToUpdate).build();
+                })
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @DELETE
@@ -86,7 +93,7 @@ public class MovieResource {
     @Transactional
     @Operation(summary = "Delete a movie", description = "Delete an existing movie from the db")
     public Response deleteById(@Parameter(description = "Movie id")
-                               @PathParam("id") Long id) {
+                               @PathParam("id") final Long id) {
         return movieRepository.deleteById(id) ?
                 Response.noContent().build() :
                 Response.status(Response.Status.BAD_REQUEST).build();
