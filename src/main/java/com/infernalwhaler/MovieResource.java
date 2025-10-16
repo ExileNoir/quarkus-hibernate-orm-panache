@@ -15,7 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import java.net.URI;
 import java.util.List;
 
-@Path("/movies")
+@Path("/api/movies")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Tag(name = "Movie REST Endpoint")
@@ -42,7 +42,7 @@ public class MovieResource {
     }
 
     @GET
-    @Path("country/{country}")
+    @Path("/country/{country}")
     @Operation(summary = "Get a movies by country", description = "Find a movies by country from the db")
     public Response findByCountry(@Parameter(description = "Movie country")
                                   @PathParam("country") final String country) {
@@ -51,7 +51,7 @@ public class MovieResource {
     }
 
     @GET
-    @Path("title/{title}")
+    @Path("/title/{title}")
     @Operation(summary = "Get a movies by title", description = "Find a movies by title from the db")
     public Response findByTitle(@Parameter(description = "Movie title")
                                 @PathParam("title") final String title) {

@@ -1,20 +1,191 @@
 package com.infernalwhaler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.infernalwhaler.model.Movie;
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import org.junit.jupiter.api.*;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.*;
+
+/**
+ * @author Sdeseure
+ * @project quarkus-hibernate-orm-panache
+ * @date 16/10/2025
+ */
 
 @QuarkusTest
+@Tag("integration")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MovieResourceTest {
+
+
+    @Inject
+    ObjectMapper objectMapper;
+
     @Test
-    void testHelloEndpoint() {
+    @Order(1)
+    void getAll() {
         given()
-                .when().get("/hello")
+                .when()
+                .get("/api/movies")
                 .then()
                 .statusCode(200)
-                .body(is("Hello from Quarkus REST"));
+                .body("size()", equalTo(2))
+                .body("id", hasItems(1, 2))
+                .body("[0].title", is("Kill Bill 5"))
+                .body("title", hasItems("Kill Bill 5", "Jurassic Parc 5"))
+                .body("description", hasItem("Action"))
+                .body("[1].director", is("Spielberg"))
+                .body("director", hasItems("Spielberg", "Tarantino"))
+                .body("country", hasItem("USA"));
     }
 
+    @Test
+    @Order(1)
+    void findById() {
+        given()
+                .pathParam("id", 1)
+                .when()
+                .get("/api/movies/{id}")
+                .then()
+                .statusCode(200)
+                .body("id", equalTo(1))
+                .body("title", is("Kill Bill 5"))
+                .body("description", is("Action"))
+                .body("director", is("Tarantino"))
+                .body("country", is("USA"));
+    }
+
+    @Test
+    @Order(1)
+    void findById_KO() {
+        given()
+                .pathParam("id", 500)
+                .when()
+                .get("/api/movies/{id}")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @Order(1)
+    void findByCountry() {
+        given()
+                .pathParam("country", "USA")
+                .when()
+                .get("/api/movies/country/{country}")
+                .then()
+                .statusCode(200)
+                .body("size()", equalTo(2))
+                .body("title", hasItems("Kill Bill 5", "Jurassic Parc 5"))
+                .body("description", hasItem("Action"))
+                .body("[1].director", is("Tarantino"))
+                .body("director", hasItems("Spielberg", "Tarantino"));
+    }
+
+    @Test
+    @Order(1)
+    void findByCountry_KO() {
+        given()
+                .pathParam("country", "PLANET")
+                .when()
+                .get("/api/movies/country/{country}")
+                .then()
+                .statusCode(200)
+                .body("size()", equalTo(0));
+    }
+
+    @Test
+    @Order(1)
+    void findByTitle() {
+        given()
+                .pathParam("title", "Kill Bill 5")
+                .when()
+                .get("/api/movies/title/{title}")
+                .then()
+                .statusCode(200)
+                .body("title", is("Kill Bill 5"))
+                .body("description", is("Action"))
+                .body("director", is("Tarantino"))
+                .body("country", is("USA"));
+    }
+
+    @Test
+    @Order(1)
+    void findByTitle_KO() {
+        given()
+                .pathParam("title", "NOT EXISTING")
+                .when()
+                .get("/api/movies/title/{title}")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @Order(3)
+    void updateMovieById() throws JsonProcessingException {
+        var movie = new Movie("The killers", "Action", "Ted Bundy", "USA");
+
+        given()
+                .contentType(MediaType.APPLICATION_JSON)
+                .pathParam("id", 1)
+                .body(objectMapper.writeValueAsString(movie))
+                .when()
+                .put("/api/movies/{id}")
+                .then()
+                .statusCode(200)
+                .body("id", notNullValue())
+                .body("title", is("The killers"))
+                .body("description", is("Action"))
+                .body("director", is("Ted Bundy"))
+                .body("country", is("USA"));
+    }
+
+    @Test
+    @Order(3)
+    void updateMovieById_KO() throws JsonProcessingException {
+        var movie = new Movie("The killers", "Action", "Ted Bundy", "USA");
+
+        given()
+                .contentType(MediaType.APPLICATION_JSON)
+                .pathParam("id", 100)
+                .body(objectMapper.writeValueAsString(movie))
+                .when()
+                .put("/api/movies/{id}")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @Order(4)
+    void deleteById() {
+        given()
+                .pathParam("id", 1)
+                .when()
+                .delete("/api/movies/{id}")
+                .then()
+                .statusCode(204);
+
+        given()
+                .pathParam("id", 1)
+                .when()
+                .get("/api/movies/{id}")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @Order(4)
+    void deleteById_KO() {
+        given()
+                .pathParam("id", 100)
+                .when()
+                .delete("/api/movies/{id}")
+                .then()
+                .statusCode(400);
+    }
 }
