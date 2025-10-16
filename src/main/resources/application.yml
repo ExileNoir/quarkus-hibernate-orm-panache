@@ -1,0 +1,11 @@
+quarkus :
+  datasource :
+    username : root
+    password : root
+    jdbc:
+      url : jdbc:mysql://localhost:3306/my_db_movie
+    db-kind : mysql
+  hibernate-orm :
+    database :
+      generation : update
+
