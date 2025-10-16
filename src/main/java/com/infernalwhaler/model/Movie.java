@@ -1,6 +1,7 @@
 package com.infernalwhaler.model;
 
 import jakarta.persistence.*;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * @author Sdeseure
@@ -10,17 +11,27 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "movies")
+@Schema(name = "Movie", description = "Movie representation")
 public class Movie {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
+
     @Column(length = 100)
+    @Schema(name = "Movie title", required = true)
     private String title;
+
     @Column(length = 200)
+    @Schema(name = "Movie description", required = true)
     private String description;
+
+    @Schema(name = "Movie director", required = true)
     private String director;
+
+    @Schema(name = "country", required = true)
     private String country;
+
 
     public Movie(String title, String description, String director, String country) {
         this.title = title;
@@ -31,6 +42,7 @@ public class Movie {
 
     public Movie() {
     }
+
 
     public Long getId() {
         return id;

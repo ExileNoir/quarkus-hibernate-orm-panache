@@ -19,4 +19,9 @@ public class MovieRepository implements PanacheRepository<Movie> {
     public List<Movie> findByCountry(final String country) {
         return list("SELECT m FROM Movie m WHERE m.country = ?1 ORDER BY m.id DESC", country);
     }
+
+    public int updateMovie(final Long id, final Movie movie) {
+        return update("UPDATE Movie SET title = ?1, description = ?2, director = ?3, country = ?4 WHERE id = ?5",
+                movie.getTitle(), movie.getDescription(), movie.getDirector(), movie.getCountry(), id);
+    }
 }
