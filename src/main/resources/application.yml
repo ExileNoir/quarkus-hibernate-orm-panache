@@ -1,10 +1,10 @@
 quarkus :
   datasource :
+    db-kind : mysql
     username : root
     password : root
     jdbc:
       url : jdbc:mysql://localhost:3306/my_db_movie
-    db-kind : mysql
   hibernate-orm :
     database :
       generation : update
@@ -12,9 +12,9 @@ quarkus :
 "%test" :
   quarkus :
     datasource :
+      db-kind : h2
       jdbc:
         url : jdbc:h2:mem:db
-      db-kind : h2
     hibernate-orm :
       dialect : org.hibernate.dialect.H2Dialect
       sql-load-script : META-INF/sql/import-test.sql
