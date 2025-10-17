@@ -35,7 +35,7 @@ class MovieResourceTest {
                 .then()
                 .statusCode(200)
                 .body("size()", equalTo(2))
-                .body("id", hasItems(1, 2))
+                .body("id", hasItems(10, 20))
                 .body("[0].title", is("Kill Bill 5"))
                 .body("title", hasItems("Kill Bill 5", "Jurassic Parc 5"))
                 .body("description", hasItem("Action"))
@@ -48,12 +48,12 @@ class MovieResourceTest {
     @Order(1)
     void findById() {
         given()
-                .pathParam("id", 1)
+                .pathParam("id", 10)
                 .when()
                 .get("/api/movies/{id}")
                 .then()
                 .statusCode(200)
-                .body("id", equalTo(1))
+                .body("id", equalTo(10))
                 .body("title", is("Kill Bill 5"))
                 .body("description", is("Action"))
                 .body("director", is("Tarantino"))
@@ -123,6 +123,32 @@ class MovieResourceTest {
                 .get("/api/movies/title/{title}")
                 .then()
                 .statusCode(404);
+    }
+
+    @Test
+    @Order(2)
+    void create() throws JsonProcessingException {
+        var movie = new Movie("The killers", "Action", "Ted Bundy", "USA");
+
+        given()
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(objectMapper.writeValueAsString(movie))
+                .when()
+                .post("/api/movies")
+                .then()
+                .statusCode(201);
+
+        given()
+                .pathParam("title", movie.getTitle())
+                .when()
+                .get("/api/movies/title/{title}")
+                .then()
+                .statusCode(200)
+                .body("title", is("The killers"))
+                .body("description", is("Action"))
+                .body("director", is("Ted Bundy"))
+                .body("country", is("USA"));
     }
 
     @Test
