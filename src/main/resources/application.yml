@@ -8,6 +8,19 @@ quarkus :
   hibernate-orm :
     database :
       generation : update
+  http :
+    port : 8080
+  log :
+    console :
+      level : INFO
+
+"%dev" :
+  quarkus :
+    http :
+      port : 8081
+    log :
+      console:
+        level : ALL
 
 "%test" :
   quarkus :
@@ -22,3 +35,13 @@ quarkus :
         generation : drop-and-create
     http :
       port : 9090
+      access-log :
+        enabled : true
+    log :
+      console :
+        level : DEBUG
+
+  "%prod" :
+    quarkus :
+      package :
+        type : uber-jar
